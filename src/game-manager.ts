@@ -57,7 +57,18 @@ export namespace GameManager {
             });
         });
     }
+
+    function isJSON(json: any): boolean {
+        try {
+            let obj = JSON.parse(json);
+            if (obj && typeof obj == 'object' && obj != null) {
+                return true;
+            }
+        } catch (err) {}
     
+        return false;
+    }
+
     export function getGameStatus(name: string): Promise<string> {
         return new Promise((resolve, reject) => {
             const container = docker.getContainer(name);
@@ -78,7 +89,21 @@ export namespace GameManager {
                                 });
 
                                 stream.on('end', function () {
-                                    resolve(chunks.join().replace(/[^A-Za-z 0-9 \.,\?""!@#\$%\^&\*\(\)-_=\+;:<>\/\\\|\}\{\[\]`~]*/g, ''));
+                                    const message = chunks.join().replace(/[^A-Za-z 0-9 \.,\?""!@#\$%\^&\*\(\)-_=\+;:<>\/\\\|\}\{\[\]`~]*/g, '');
+                                    let status;
+
+                                    let start = 0;
+                                    for (let i = 0; i < message.length; i++) {
+                                        if (isJSON(message.substring(start, i + 1))) {
+                                            status = JSON.parse(message.substring(start, i + 1));
+                                        }
+                                    }
+
+                                    if (status) {
+                                        resolve(status);
+                                    } else {
+                                        reject('');
+                                    }
                                 });
                             }
                         });
