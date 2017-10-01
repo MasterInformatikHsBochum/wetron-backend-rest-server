@@ -11,4 +11,6 @@ RUN npm install
 # Bundle app source
 COPY . .
 
+EXPOSE 3000
+
 ENTRYPOINT ["./node_modules/.bin/ts-node", "./src/index.ts"]

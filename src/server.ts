@@ -1,6 +1,7 @@
 import * as express from 'express';
 import * as morgan from 'morgan';
-import * as bodyparser from 'body-parser'
+import * as bodyParser from 'body-parser'
+import { GameManager } from './game-manager';
 
 export class Server {
     private _app: express.Application;
@@ -18,40 +19,54 @@ export class Server {
         //use logger middlware
         this._app.use(morgan("dev"));
 
-        this._app.use(bodyparser.urlencoded({
+        this._app.use(bodyParser.urlencoded({
             extended: true
         }));
+
+        this._app.use(bodyParser.json());
     }
 
     private routes() {
         let router = express.Router();
 
         router.get('/games/', (req, res, next) => {
-            res.json([{
-                'id': 1,
-                'player-count': 2,
-                'name': 'game1'
-            },
-            {
-                'id': 2,
-                'player-count': 4,
-                'name': 'game2'
-            }
-            ]);
+            GameManager.getGames()
+            .then(function(gameIds) {
+                res.json(gameIds);
+            })
+            .catch(function(error) {
+                res.status(404).send(error);
+            });
         })
 
         router.get('/games/:id', (req, res, next) => {
-            let id = req.params.id;
-            res.json({
-                'id': id,
-                'player-count': 2,
-                'name': 'game' + id
-            }, )
+            const id = req.params.id;
+            const name = `wetron-backend-game-server-${id}`;
+
+            GameManager.getGameStatus(name)
+            .then(function(status) {
+                res.send(status);
+            })
+            .catch(function(error) {
+                res.sendStatus(404).send(error);
+            });
         })
 
         router.post('/games/', (req, res, next) => {
-            console.log(req.body);
-            res.send('POST request to homepage');            
+            try {
+                const id = parseInt(req.body['id']);
+                const maxPlayers = parseInt(req.body['maxPlayers']);
+
+                GameManager.startGame(id, maxPlayers)
+                .then(function(status) {
+                    res.send(status);
+                })
+                .catch(function(error) {
+                    res.sendStatus(404).send(error);
+                });
+            } catch (error) {
+                res.sendStatus(404).send(error);
+            }
         })
 
         this._app.use('/', router);
