@@ -90,19 +90,27 @@ export namespace GameManager {
 
                                 stream.on('end', function () {
                                     const message = chunks.join().replace(/[^A-Za-z 0-9 \.,\?""!@#\$%\^&\*\(\)-_=\+;:<>\/\\\|\}\{\[\]`~]*/g, '');
-                                    let status;
 
-                                    let start = 0;
+                                    const startCharacter = '{';
+                                    let startFound = false;
+                                    let s = '';
                                     for (let i = 0; i < message.length; i++) {
-                                        if (isJSON(message.substring(start, i + 1))) {
-                                            status = JSON.parse(message.substring(start, i + 1));
+                                        let c = message[i].toString();
+
+                                        if (startFound === false) {
+                                            if (c === startCharacter) {
+                                                s += c;
+                                                startFound = true;
+                                            }
+                                        } else {
+                                            s += c;
                                         }
                                     }
 
-                                    if (status) {
-                                        resolve(status);
+                                    if (startFound === true && isJSON(s)) {
+                                        resolve(s);
                                     } else {
-                                        reject('');
+                                        reject('Could not parse JSON');
                                     }
                                 });
                             }
