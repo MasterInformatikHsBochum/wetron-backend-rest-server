@@ -35,7 +35,7 @@ export class Server {
                 res.json(gameIds);
             })
             .catch(function(error) {
-                res.status(404).send(error);
+                res.sendStatus(404).send(error);
             });
         })
 
@@ -54,12 +54,21 @@ export class Server {
 
         router.post('/games/', (req, res, next) => {
             try {
-                const id = parseInt(req.body['id']);
                 const maxPlayers = parseInt(req.body['maxPlayers']);
 
-                GameManager.startGame(id, maxPlayers)
-                .then(function(status) {
-                    res.send(status);
+                GameManager.getGames()
+                .then(function(gameIds) {
+                    const id = Math.max(...gameIds) + 1;
+
+                    GameManager.startGame(id, maxPlayers)
+                    .then(function(status) {
+                        res.json({
+                            'id': id
+                        });
+                    })
+                    .catch(function(error) {
+                        res.sendStatus(404).send(error);
+                    });
                 })
                 .catch(function(error) {
                     res.sendStatus(404).send(error);
