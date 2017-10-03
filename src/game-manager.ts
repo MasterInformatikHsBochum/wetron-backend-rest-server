@@ -35,9 +35,9 @@ export namespace GameManager {
                     name: `wetron-backend-game-server-${gameId}`,
                     Tty: true,
                     Cmd: [`g=${gameId}`, `p=${maxPlayers}`],
-                    // HostConfig: {
-                    //     AutoRemove: true
-                    // }
+                    HostConfig: {
+                        AutoRemove: true
+                    }
                 }, (error, container) => {
                     if (error) {
                         reject(error);

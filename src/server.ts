@@ -35,7 +35,7 @@ export class Server {
                 res.json(gameIds);
             })
             .catch(function(error) {
-                res.sendStatus(404).send(error);
+                res.status(404).send(error);
             });
         })
 
@@ -48,7 +48,7 @@ export class Server {
                 res.send(status);
             })
             .catch(function(error) {
-                res.sendStatus(404).send(error);
+                res.status(404).send(error);
             });
         })
 
@@ -58,7 +58,12 @@ export class Server {
 
                 GameManager.getGames()
                 .then(function(gameIds) {
-                    const id = Math.max(...gameIds) + 1;
+                    let id;
+                    if (gameIds.length > 0) {
+                        id = Math.max(...gameIds) + 1;
+                    } else {
+                        id = 1;
+                    }
 
                     GameManager.startGame(id, maxPlayers)
                     .then(function(status) {
@@ -67,14 +72,14 @@ export class Server {
                         });
                     })
                     .catch(function(error) {
-                        res.sendStatus(404).send(error);
+                        res.status(404).send(error);
                     });
                 })
                 .catch(function(error) {
-                    res.sendStatus(404).send(error);
+                    res.status(404).send(error);
                 });
             } catch (error) {
-                res.sendStatus(404).send(error);
+                res.status(404).send(error);
             }
         })
 
